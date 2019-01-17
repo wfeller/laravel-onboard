@@ -1,4 +1,4 @@
-# Onboard
+# Laravel Onboard
 A Laravel package to help track user onboarding steps.
 
 ##### Based on [calebporzio/onboard](https://github.com/calebporzio/onboard).
@@ -24,16 +24,8 @@ Configure your steps in your `App\Providers\AppServiceProvider.php`
 ```php
     public function boot()
     {
-        // This step will apply to all onboarding users
-        Onboard::addStep('Complete Profile')
-            ->link('/profile')
-            ->cta('Complete')
-            ->completeIf(function (User $user) {
-                return $user->profile->isComplete();
-            });
-        
         // This step will only apply to User::class:
-        Onboard::addStep('Create Your First Post', User::class)
+        Onboard::addStep('Create your first post', User::class)
             ->link('/post/create')
             ->cta('Create Post')
             ->completeIf(function (User $user) {
@@ -82,7 +74,9 @@ Now you can access these steps along with their state wherever you like. Here is
 ```
 Check out all the available features below:
 ```php
-User::onboarded()->get()->each->notify(new SomeNotification);
+User::onboarded()->get()->each->notify(new OnboardingComplete);
+// User::onboarded(true by default)
+User::onboarded(false)->get()->each->notify(new OnboardingIncomplete);
 
 $onboarding = Auth::user()->onboarding();
 
@@ -90,8 +84,10 @@ $onboarding->inProgress();
 $onboarding->finished();
 $onboarding->finishedRequired();
 $onboarding->nextUnfinishedStep();
+$onboarding->step($code); // returns the step you're looking for
 
 $onboarding->steps()->each(function($step) {
+    $step->code;
     $step->title;
     $step->cta;
     $step->link;
@@ -104,7 +100,7 @@ $onboarding->steps()->each(function($step) {
 Definining custom attributes and accessing them:
 ```php
 // Defining the attributes
-Onboard::addStep('Step w/ custom attributes')
+Onboard::addStep('Step w/ custom attributes', User::class)
     ->attributes([
         'name' => 'Waldo',
         'shirt_color' => 'Red & White',
