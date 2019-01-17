@@ -8,29 +8,9 @@ class OnboardingSteps
 {
     protected $steps = [];
 
-    /**
-     * @param string $title The title of the step.
-     * @param array|string|null $userClass The class or classes this step should be applied to (aka App\User, App\Team, etc.)
-     * @return \WF\Onboard\OnboardingStep
-     */
-    public function addStep(string $title, $userClass = null) : OnboardingStep
+    public function addStep(string $code, string $onboardedClass) : OnboardingStep
     {
-        if (is_array($userClass) && empty($userClass)) {
-            throw new \UnexpectedValueException('Cannot add step to an empty array.');
-        }
-
-        $userClass = $userClass ?? [null];
-
-        foreach ((array) $userClass as $class) {
-            $class = $class ?? 'null';
-            if (! isset($this->steps[$class])) {
-                $this->steps[$class] = [];
-            }
-
-            $this->steps[$class][] = $step = new OnboardingStep($title);
-        }
-
-        return $step;
+        return $this->steps[$onboardedClass][$code] = new OnboardingStep($code);
     }
 
     /**

@@ -8,7 +8,8 @@ use Illuminate\Support\Arr;
 /**
  * Class OnboardingStep
  * @package WF\Onboard
- * @property-read string $title
+ * @property-read string $code
+ * @property-read string|null $title
  * @property-read string|null $cta
  * @property-read string|null $link
  */
@@ -21,9 +22,14 @@ class OnboardingStep
     protected $requiredScope;
     protected $user;
 
-    public function __construct(string $title)
+    public function __construct(string $code)
     {
-        $this->attributes(['title' => $title]);
+        $this->attributes(['code' => $code, 'title' => $code]);
+    }
+
+    public function title(string $title) : self
+    {
+        return $this->attributes(['title' => $title]);
     }
 
     public function cta(string $cta) : self
