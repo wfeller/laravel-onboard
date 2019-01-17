@@ -34,16 +34,12 @@ class OnboardingStep
 
     public function cta(string $cta) : self
     {
-        $this->attributes(['cta' => $cta]);
-
-        return $this;
+        return $this->attributes(['cta' => $cta]);
     }
 
     public function link(string $link) : self
     {
-        $this->attributes(['link' => $link]);
-
-        return $this;
+        return $this->attributes(['link' => $link]);
     }
 
     public function completeIf(callable $callback) : self
