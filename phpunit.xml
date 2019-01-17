@@ -8,12 +8,8 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
 >
     <filter>
-        <blacklist>
-            <directory suffix=".php">.</directory>
-        </blacklist>
         <whitelist>
             <directory suffix=".php">./src</directory>
             <exclude>

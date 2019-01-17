@@ -2,154 +2,172 @@
 
 namespace Calebporzio\Onboard;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+
 /**
- * The main class for this package. This contains all the logic
- * for creating, and accessing onboarding steps.
+ * Class OnboardingStep
+ * @package Calebporzio\Onboard
+ * @property-read string $title
+ * @property-read string|null $cta
+ * @property-read string|null $link
  */
 class OnboardingStep
 {
-	/**
-	 * The container for all defined attributes of this step.
-	 * 
-	 * @var array
-	 */
-	protected $attributes = [];
+    protected $attributes = [];
+    protected $completeIf;
+    protected $completeScope;
+    protected $requiredIf;
+    protected $requiredScope;
+    protected $user;
 
-	/**
-	 * The condition on which to determine if the step is complete
-	 * or not. The user class gets passed through to this.
-	 * 
-	 * @var callable
-	 */
-	protected $completeIf;
-
-	/**
-	 * The current user model.
-	 * 
-	 * @var object
-	 */
-	protected $user;
-
-	/**
-	 * Create a new onboarding step.
-	 * 
-	 * @param string $title
-	 */
-	public function __construct($title)
-	{
-		$this->attributes(['title' => $title]);
-	}
-
-	/**
-	 * Add "CTA" (Call To Action) verbaige. Best used on a button or link.
-	 * 
-	 * @param  string $cta
-	 * @return $this
-	 */
-	public function cta($cta)
-	{
-		$this->attributes(['cta' => $cta]);
-
-		return $this;
-	}
-
-	/**
-	 * Set a link to be used as the url to a CTA (button / link).
-	 * 
-	 * @param  string $link
-	 * @return $this
-	 */
-	public function link($link)
-	{
-		$this->attributes(['link' => $link]);
-
-		return $this;
-	}
-
-	/**
-	 * A closure containing the condition for determining if the
-	 * step is complete or not.
-	 * 
-	 * @param  callable $callback
-	 * @return $this
-	 */
-	public function completeIf(callable $callback)
-	{
-		$this->completeIf = $callback;
-
-		return $this;
-	}
-
-	/**
-	 * Set the user to be passed through to the supplied callback.
-	 * 
-	 * @param object $user
-	 * @return $this
-	 */
-	public function setUser($user)
-	{
-		$this->user = $user;
-
-		return $this;
-	}
-
-	/**
-	 * Determine if the the step is complete or not.
-	 * 
-	 * @return bool
-	 */
-	public function complete()
-	{
-		if ($this->completeIf && $this->user) {
-			return !! call_user_func_array($this->completeIf, [$this->user]);
-		}
-
-		return false;
-	}
-
-	/**
-	 * Determine if the step has not yet been completed.
-	 * 
-	 * @return bool
-	 */
-	public function incomplete()
-	{
-		return ! $this->complete();
-	}
-	
-	/**
-	 * Get a given attribute from the step.
-	 *
-	 * @param  string  $key
-	 * @param  mixed  $default
-	 * @return mixed
-	 */
-	public function attribute($key, $default = null)
+    public function __construct(string $title)
     {
-        return array_get($this->attributes, $key, $default);
+        $this->attributes(['title' => $title]);
     }
 
-    /**
-     * Specify the step's attributes.
-     *
-     * @param  array  $attributes
-     * @return $this
-     */
-    public function attributes(array $attributes)
+    public function cta(string $cta) : self
+    {
+        $this->attributes(['cta' => $cta]);
+
+        return $this;
+    }
+
+    public function link(string $link) : self
+    {
+        $this->attributes(['link' => $link]);
+
+        return $this;
+    }
+
+    public function completeIf(callable $callback) : self
+    {
+        $this->completeIf = $callback;
+
+        return $this;
+    }
+
+    public function completeScope(callable $callback) : self
+    {
+        $this->completeScope = $callback;
+
+        return $this;
+    }
+
+    public function requiredIf(callable $callback) : self
+    {
+        $this->requiredIf = $callback;
+
+        return $this;
+    }
+
+    public function requiredScope(callable $callback) : self
+    {
+        $this->requiredScope = $callback;
+
+        return $this;
+    }
+
+    public function setUser($user) : self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function complete() : bool
+    {
+        if ($this->completeIf && $this->user) {
+            return !! call_user_func_array($this->completeIf, [$this->user]);
+        }
+
+        return false;
+    }
+
+    public function incomplete() : bool
+    {
+        return ! $this->complete();
+    }
+
+    public function required() : bool
+    {
+        if ($this->requiredIf && $this->user) {
+            return !! call_user_func_array($this->requiredIf, [$this->user]);
+        }
+
+        return true;
+    }
+
+    public function optional() : bool
+    {
+        return ! $this->required();
+    }
+
+    public function applyScopes(Builder $builder) : void
+    {
+        if (! $this->completeScope) {
+            throw new \LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
+        }
+        if ($this->requiredScope) {
+            static::registerBuilderMacros();
+            $builder->where(function (Builder $builder) {
+                $builder
+                    ->orWhere(function (Builder $builder) {
+                        $dummyBuilder = new Builder(clone $builder->getQuery());
+                        call_user_func_array($this->requiredScope, [$dummyBuilder]);
+                        $builder->whereRaw(
+                            $dummyBuilder->getQuery()->getGrammar()->reverseWheres($dummyBuilder),
+                            $dummyBuilder->getBindings()
+                        );
+                    })
+                    ->orWhere(function (Builder $builder) {
+                        $this->applyScope($this->requiredScope, $builder);
+                        $this->applyScope($this->completeScope, $builder);
+                    });
+            });
+        } else {
+            $this->applyScope($this->completeScope, $builder);
+        }
+    }
+
+    private function applyScope(callable $scope, Builder $builder) : void
+    {
+        $builder->where(function (Builder $query) use ($scope) {
+            call_user_func_array($scope, [$query]);
+        });
+    }
+
+    public function attribute($key, $default = null)
+    {
+        return Arr::get($this->attributes, $key, $default);
+    }
+
+    public function attributes(array $attributes) : self
     {
         $this->attributes = array_merge($this->attributes, $attributes);
 
         return $this;
     }
 
-    /**
-     * Dynamically access the step's attributes.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-	public function __get($key)
-	{
-	    return $this->attribute($key);
-	}
+    public function __get($key)
+    {
+        return $this->attribute($key);
+    }
+
+    protected static function registerBuilderMacros() : void
+    {
+        Grammar::macro('reverseWheres', function (Builder $dummy) {
+            $wheres = $this->compileWheresToArray($dummy->getQuery());
+            array_walk($wheres, function (&$value) {
+                if (Str::startsWith($value, ['and', 'And', 'AND'])) {
+                    $value = 'or NOT' . substr($value, 3);
+                } elseif (Str::startsWith($value, ['or', 'Or', 'OR'])) {
+                    $value = 'and NOT' . substr($value, 2);
+                }
+            });
+            return Str::replaceFirst('where ', '', $this->concatenateWhereClauses(null, $wheres));
+        });
+    }
 }

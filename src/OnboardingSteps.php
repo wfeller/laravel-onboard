@@ -2,44 +2,51 @@
 
 namespace Calebporzio\Onboard;
 
-/**
- * A container for onboarding steps.
- */
+use Illuminate\Support\Collection;
+
 class OnboardingSteps
 {
-	/**
-	 * The defined onboarding steps. Note: these do not contain a user
-	 * yet, therefore they should not be accessed directly.
-	 * 
-	 * @var array
-	 */
-	protected $steps = [];
+    protected $steps = [];
 
-	/**
-	 * Add an onboarding step starting with a title. This is the starting
-	 * method to initiate a fluent interface for configuring the step.
-	 * 
-	 * @param string $title The title of the step.
-	 */
-	public function addStep($title)
-	{
-		$this->steps[] = $step = new OnboardingStep($title);
+    /**
+     * @param string $title The title of the step.
+     * @param array|string|null $userClass The class or classes this step should be applied to (aka App\User, App\Team, etc.)
+     * @return \Calebporzio\Onboard\OnboardingStep
+     */
+    public function addStep(string $title, $userClass = null) : OnboardingStep
+    {
+        if (is_array($userClass) && empty($userClass)) {
+            throw new \UnexpectedValueException('Cannot add step to an empty array.');
+        }
 
-		return $step;
-	}
+        $userClass = $userClass ?? [null];
 
-	/**
-	 * The accessor to retrieve all the defined steps. This does the important
-	 * job of ensuring each step has access to the current user object.
-	 * 
-	 * @param  object $user The current user object
-	 * @return \Illuminate\Support\Collection
-	 */
-	public function steps($user)
-	{
-		// Load each step with the current User object.
-		return collect($this->steps)->map(function($step) use ($user) {
-			return $step->setUser($user);
-		});
-	}
+        foreach ((array) $userClass as $class) {
+            $class = $class ?? 'null';
+            if (! isset($this->steps[$class])) {
+                $this->steps[$class] = [];
+            }
+
+            $this->steps[$class][] = $step = new OnboardingStep($title);
+        }
+
+        return $step;
+    }
+
+    /**
+     * @param  object $user The current user object
+     * @return \Illuminate\Support\Collection|\Calebporzio\Onboard\OnboardingStep[]
+     */
+    public function steps(object $user) : Collection
+    {
+        // Load each step with the current User object.
+        if (isset($this->steps[get_class($user)])) {
+            $steps = $this->steps[get_class($user)];
+        } elseif (isset($this->steps['null'])) {
+            $steps = $this->steps['null'];
+        } else {
+            $steps = [];
+        }
+        return collect($steps)->map->setUser($user);
+    }
 }

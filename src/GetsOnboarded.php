@@ -2,20 +2,24 @@
 
 namespace Calebporzio\Onboard;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 
 /**
- * This is the trait to be added to the app's User class.
+ * Trait GetsOnboarded
+ * @package Calebporzio\Onboard
+ * @method static \Illuminate\Database\Eloquent\Builder|static onboarded()
  */
 trait GetsOnboarded
 {
-    /**
-     * This provides a pathway for the package's API
-     *
-     * @return \Calebporzio\Onboard\OnboardingManager $onboarding
-     */
-    public function onboarding()
+    public function onboarding() : OnboardingManager
     {
         return App::make(OnboardingManager::class, ['user' => $this]);
+    }
+
+    public function scopeOnboarded(Builder $builder) : Builder
+    {
+        $this->onboarding()->steps()->each->applyScopes($builder);
+        return $builder;
     }
 }

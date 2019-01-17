@@ -9,94 +9,106 @@ A Laravel package to help track user onboarding steps.
 ```bash
 composer require calebporzio/onboard
 ```
-* Register the Service Provider and Facade in `config/app.php`
-```php
-'providers' => [
-    ...
-    Calebporzio\Onboard\OnboardServiceProvider::class,
-
-'aliases' => [
-    ...
-    Calebporzio\Onboard\OnboardFacade::class,
-```
 * Add the `Calebporzio\Onboard\GetsOnboarded` trait to your app's User model
 ```php
 class User extends Model
 {
     use \Calebporzio\Onboard\GetsOnboarded;
-    ...
+    // ...
+}
 ```
 
 ## Example Configuration:
 
 Configure your steps in your `App\Providers\AppServiceProvider.php`
 ```php
-    ...
     public function boot()
     {
-	    Onboard::addStep('Complete Profile')
-	    	->link('/profile')
-	    	->cta('Complete')
-	    	->completeIf(function (User $user) {
-	    		return $user->profile->isComplete();
-	    	});
-
-	    Onboard::addStep('Create Your First Post')
-	    	->link('/post/create')
-	    	->cta('Create Post')
-	    	->completeIf(function (User $user) {
-	    		return $user->posts->count() > 0;
-	    	});
+        // This step will apply to all onboarding users
+        Onboard::addStep('Complete Profile')
+            ->link('/profile')
+            ->cta('Complete')
+            ->completeIf(function (User $user) {
+                return $user->profile->isComplete();
+            });
+        
+        // This step will only apply to User::class:
+        Onboard::addStep('Create Your First Post', User::class)
+            ->link('/post/create')
+            ->cta('Create Post')
+            ->completeIf(function (User $user) {
+                return $user->posts->count() > 0;
+            })
+            // You may add a scope to only fetch users having completed this step
+            // This scope will be used when querying User::onboarded()->get()
+            ->completeScope(function (Builder $builder) {
+                $builder->whereHas('posts');
+            })
+            // All steps are required by default for all users, but you can change this behaviour
+            ->requiredIf(function (User $user) {
+                return $user->type === 'writer';
+            })
+            // You may translate your required method into a DB where clause.
+            // If you don't, your completeScope (i.e. $builder->whereHas('posts')) will be called on all Users
+            ->requiredScope(function (Builder $builder) {
+                $builder->where('type', 'writer');
+            });
+    }   
 ```
 ## Usage:
 Now you can access these steps along with their state wherever you like. Here is an example blade template:
 ```php
 @if (Auth::user()->onboarding()->inProgress())
-	<div>
+    <div>
 
-		@foreach (Auth::user()->onboarding()->steps as $step)
-			<span>
-				@if($step->complete())
-					<i class="fa fa-check-square-o fa-fw"></i>
-					<s>{{ $loop->iteration }}. {{ $step->title }}</s>
-				@else
-					<i class="fa fa-square-o fa-fw"></i>
-					{{ $loop->iteration }}. {{ $step->title }}
-				@endif
-			</span>
-						
-			<a href="{{ $step->link }}" {{ $step->complete() ? 'disabled' : '' }}>
-				{{ $step->cta }}
-			</a>
-		@endforeach
+        @foreach (Auth::user()->onboarding()->steps as $step)
+            <span>
+                @if($step->complete())
+                    <i class="fa fa-check-square-o fa-fw"></i>
+                    <s>{{ $loop->iteration }}. {{ $step->title }}</s>
+                @else
+                    <i class="fa fa-square-o fa-fw"></i>
+                    {{ $loop->iteration }}. {{ $step->title }}
+                @endif
+            </span>
+                        
+            <a href="{{ $step->link }}" {{ $step->complete() ? 'disabled' : '' }}>
+                {{ $step->cta }}
+            </a>
+        @endforeach
 
-	</div>
+    </div>
 @endif
 ```
 Check out all the available features below:
 ```php
+User::onboarded()->get()->each->notify(new SomeNotification);
+
 $onboarding = Auth::user()->onboarding();
 
 $onboarding->inProgress();
-
 $onboarding->finished();
+$onboarding->finishedRequired();
+$onboarding->nextUnfinishedStep();
 
 $onboarding->steps()->each(function($step) {
-	$step->title;
-	$step->cta;
-	$step->link;
-	$step->complete();
-	$step->incomplete();
+    $step->title;
+    $step->cta;
+    $step->link;
+    $step->complete();
+    $step->incomplete();
+    $step->required();
+    $step->optional();
 });
 ```
 Definining custom attributes and accessing them:
 ```php
 // Defining the attributes
 Onboard::addStep('Step w/ custom attributes')
-	->attributes([
-		'name' => 'Waldo',
-		'shirt_color' => 'Red & White',
-	]);
+    ->attributes([
+        'name' => 'Waldo',
+        'shirt_color' => 'Red & White',
+    ]);
 
 // Accessing them
 $step->name;
@@ -104,7 +116,7 @@ $step->shirt_color;
 ```
 
 
-## Example middlware
+## Example middleware
 
 If you want to ensure that your user is redirected to the next 
 unfinished onboarding step, whenever they access your web application,  
@@ -115,7 +127,7 @@ you can use the following middleware as a starting point:
 
 namespace App\Http\Middleware;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Closure;
 
 class RedirectToUnfinishedOnboardingStep
@@ -124,7 +136,7 @@ class RedirectToUnfinishedOnboardingStep
     {
         if (Auth::user()->onboarding()->inProgress()) {
             return redirect()->to(
-                Auth::user()->onboarding()->nextUnfinishedStep->link
+                Auth::user()->onboarding()->nextUnfinishedStep()->link
             );
         }
         

@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Facade;
  */
 class OnboardFacade extends Facade
 {
-	/**
-	* Get the registered name of the component.
-	*
-	* @return string
-	*/
-	protected static function getFacadeAccessor()
-	{
-	    return 'Calebporzio\Onboard\OnboardingSteps';
-	}
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return OnboardingSteps::class;
+    }
 }
