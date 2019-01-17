@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 
 class OnboardingSteps
 {
+    protected $stepsCache = [];
+
     protected $steps = [];
 
     public function addStep(string $code, string $onboardedClass) : OnboardingStep
@@ -19,14 +21,17 @@ class OnboardingSteps
      */
     public function steps(object $user) : Collection
     {
-        // Load each step with the current User object.
-        if (isset($this->steps[get_class($user)])) {
-            $steps = $this->steps[get_class($user)];
-        } elseif (isset($this->steps['null'])) {
-            $steps = $this->steps['null'];
-        } else {
-            $steps = [];
+        $id = spl_object_id($user);
+
+        if (! isset($this->stepsCache[$id])) {
+            $this->stepsCache[$id] = [];
+            if (isset($this->steps[get_class($user)])) {
+                foreach ($this->steps[get_class($user)] as $code => $step) {
+                    $this->stepsCache[$id][$code] = clone $step;
+                }
+            }
         }
-        return collect($steps)->map->setUser($user);
+
+        return collect($this->stepsCache[$id])->map->setUser($user);
     }
 }
