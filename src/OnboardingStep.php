@@ -3,9 +3,7 @@
 namespace WF\Onboard;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 /**
  * Class OnboardingStep
@@ -111,7 +109,6 @@ class OnboardingStep
             throw new \LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
         }
         if ($this->requiredScope) {
-            static::registerBuilderMacros();
             $builder->where(function (Builder $builder) {
                 $builder
                     ->orWhere(function (Builder $builder) {
@@ -154,20 +151,5 @@ class OnboardingStep
     public function __get($key)
     {
         return $this->attribute($key);
-    }
-
-    protected static function registerBuilderMacros() : void
-    {
-        Grammar::macro('reverseWheres', function (Builder $dummy) {
-            $wheres = $this->compileWheresToArray($dummy->getQuery());
-            array_walk($wheres, function (&$value) {
-                if (Str::startsWith($value, ['and', 'And', 'AND'])) {
-                    $value = 'or NOT' . substr($value, 3);
-                } elseif (Str::startsWith($value, ['or', 'Or', 'OR'])) {
-                    $value = 'and NOT' . substr($value, 2);
-                }
-            });
-            return Str::replaceFirst('where ', '', $this->concatenateWhereClauses(null, $wheres));
-        });
     }
 }
