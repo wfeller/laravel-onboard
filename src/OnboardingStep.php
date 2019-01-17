@@ -115,7 +115,7 @@ class OnboardingStep
             $builder->where(function (Builder $builder) {
                 $builder
                     ->orWhere(function (Builder $builder) {
-                        $dummyBuilder = new Builder(clone $builder->getQuery());
+                        $dummyBuilder = clone $builder;
                         call_user_func_array($this->requiredScope, [$dummyBuilder]);
                         $builder->whereRaw(
                             $dummyBuilder->getQuery()->getGrammar()->reverseWheres($dummyBuilder),

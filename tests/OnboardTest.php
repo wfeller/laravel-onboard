@@ -187,6 +187,66 @@ class OnboardTest extends TestCase
         $this->assertEquals(7, User::query()->count());
     }
 
+    /** @test */
+    public function can_use_scope_in_onboarded_scope()
+    {
+        $this->assertEquals(0, User::onboarded()->count());
+        /** @var OnboardingSteps $steps */
+        OnboardFacade::addStep('Required', User::class)
+            ->completeScope(function (Builder $builder) {
+                /** @var User $builder */
+                $builder->named('robert');
+            })
+            ->completeIf(function (User $user) {
+                return $user->name === 'robert';
+            })
+            ->requiredScope(function (Builder $builder) {
+                /** @var User $builder */
+                $builder->hasAnyName('robert', 'john');
+            })
+        ;
+
+        User::query()->insert([
+            ['name' => 'john', 'age' => 10], // not complete
+            ['name' => 'robert', 'age' => 100], // complete
+        ]);
+
+        $robert = User::named('robert')->first();
+
+        $this->assertEquals(1, User::onboarded()->count());
+        $this->assertTrue($robert->is(User::onboarded()->first()));
+    }
+
+    /** @test */
+    public function can_use_scope_in_onboarded_scope_2()
+    {
+        $this->assertEquals(0, User::onboarded()->count());
+        /** @var OnboardingSteps $steps */
+        OnboardFacade::addStep('Required', User::class)
+            ->completeScope(function (Builder $builder) {
+                /** @var User $builder */
+                $builder->hasAnyName('robert');
+            })
+            ->completeIf(function (User $user) {
+                return $user->name === 'robert';
+            })
+            ->requiredScope(function (Builder $builder) {
+                /** @var User $builder */
+                $builder->hasAnyName('robert', 'john');
+            })
+        ;
+
+        User::query()->insert([
+            ['name' => 'john', 'age' => 10], // not complete
+            ['name' => 'robert', 'age' => 100], // complete
+        ]);
+
+        $robert = User::named('robert')->first();
+
+        $this->assertEquals(1, User::onboarded()->count());
+        $this->assertTrue($robert->is(User::onboarded()->first()));
+    }
+
     private function boolCallable(bool $return = true)
     {
         return function () use ($return) {
