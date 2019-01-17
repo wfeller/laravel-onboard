@@ -1,20 +1,21 @@
 <?php
 
-namespace Calebporzio\Onboard;
+namespace WF\Onboard;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class OnboardingManager
 {
     protected $steps;
 
-    public function __construct(object $user, OnboardingSteps $onboardingSteps)
+    public function __construct(Model $user, OnboardingSteps $onboardingSteps)
     {
         $this->steps = $onboardingSteps->steps($user);
     }
 
     /**
-     * @return \Illuminate\Support\Collection|\Calebporzio\Onboard\OnboardingStep[]
+     * @return \Illuminate\Support\Collection|\WF\Onboard\OnboardingStep[]
      */
     public function steps() : Collection
     {

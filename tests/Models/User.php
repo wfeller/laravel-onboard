@@ -1,13 +1,13 @@
 <?php
 
-namespace Calebporzio\Onboard\Test\Models;
+namespace WF\Onboard\Test\Models;
 
-use Calebporzio\Onboard\GetsOnboarded;
+use WF\Onboard\GetsOnboarded;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class User
- * @package Calebporzio\Onboard\Test\Models
+ * @package WF\Onboard\Test\Models
  * @property string $name
  * @property string $age
  */

@@ -1,6 +1,6 @@
 <?php
 
-namespace Calebporzio\Onboard;
+namespace WF\Onboard;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 /**
  * Class OnboardingStep
- * @package Calebporzio\Onboard
+ * @package WF\Onboard
  * @property-read string $title
  * @property-read string|null $cta
  * @property-read string|null $link
@@ -70,7 +70,7 @@ class OnboardingStep
         return $this;
     }
 
-    public function setUser($user) : self
+    public function setUser(object $user) : self
     {
         $this->user = $user;
 

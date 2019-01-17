@@ -1,19 +1,19 @@
-![](https://raw.githubusercontent.com/calebporzio/onboard/master/onboard-logo.png)
-
 # Onboard
 A Laravel package to help track user onboarding steps.
+
+##### Based on [calebporzio/onboard](https://github.com/calebporzio/onboard).
 
 ## Installation:
 
 * Install the package via composer
 ```bash
-composer require calebporzio/onboard
+composer require wfeller/laravel-onboard
 ```
-* Add the `Calebporzio\Onboard\GetsOnboarded` trait to your app's User model
+* Add the `WF\Onboard\GetsOnboarded` trait to your app's User model
 ```php
 class User extends Model
 {
-    use \Calebporzio\Onboard\GetsOnboarded;
+    use \WF\Onboard\GetsOnboarded;
     // ...
 }
 ```
@@ -114,7 +114,6 @@ Onboard::addStep('Step w/ custom attributes')
 $step->name;
 $step->shirt_color;
 ```
-
 
 ## Example middleware
 

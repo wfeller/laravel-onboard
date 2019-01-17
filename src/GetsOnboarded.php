@@ -1,13 +1,13 @@
 <?php
 
-namespace Calebporzio\Onboard;
+namespace WF\Onboard;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 
 /**
  * Trait GetsOnboarded
- * @package Calebporzio\Onboard
+ * @package WF\Onboard
  * @method static \Illuminate\Database\Eloquent\Builder|static onboarded()
  */
 trait GetsOnboarded

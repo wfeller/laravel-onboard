@@ -1,11 +1,15 @@
 {
-  "name": "calebporzio/onboard",
+  "name": "wfeller/laravel-onboard",
   "description": "Track onboarding steps for users when they get setup in your app.",
   "license": "MIT",
   "authors": [
     {
       "name": "Caleb Porzio",
       "email": "caleb@fmtc.co"
+    },
+    {
+      "name": "William",
+      "homepage": "https://github.com/wfeller"
     }
   ],
   "require": {
@@ -18,21 +22,21 @@
   },
   "autoload": {
     "psr-4": {
-      "Calebporzio\\Onboard\\": "src"
+      "WF\\Onboard\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Calebporzio\\Onboard\\Test\\": "tests"
+      "WF\\Onboard\\Test\\": "tests"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Calebporzio\\Onboard\\OnboardServiceProvider"
+        "WF\\Onboard\\OnboardServiceProvider"
       ],
       "aliases": {
-        "Onboard": "Calebporzio\\Onboard\\OnboardFacade"
+        "Onboard": "WF\\Onboard\\OnboardFacade"
       }
     }
   }

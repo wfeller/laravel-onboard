@@ -1,6 +1,6 @@
 <?php
 
-namespace Calebporzio\Onboard;
+namespace WF\Onboard;
 
 use Illuminate\Support\ServiceProvider;
 

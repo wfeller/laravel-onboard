@@ -1,8 +1,8 @@
 <?php
 
-namespace Calebporzio\Onboard\Test;
+namespace WF\Onboard\Test;
 
-use Calebporzio\Onboard\OnboardServiceProvider;
+use WF\Onboard\OnboardServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;

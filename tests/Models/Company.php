@@ -1,6 +1,6 @@
 <?php
 
-namespace Calebporzio\Onboard\Test\Models;
+namespace WF\Onboard\Test\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

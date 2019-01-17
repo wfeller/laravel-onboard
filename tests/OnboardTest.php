@@ -1,11 +1,12 @@
 <?php
 
-namespace Calebporzio\Onboard\Test;
+namespace WF\Onboard\Test;
 
-use Calebporzio\Onboard\OnboardingSteps;
-use Calebporzio\Onboard\OnboardingManager;
-use Calebporzio\Onboard\Test\Models\Company;
-use Calebporzio\Onboard\Test\Models\User;
+use WF\Onboard\OnboardFacade;
+use WF\Onboard\OnboardingSteps;
+use WF\Onboard\OnboardingManager;
+use WF\Onboard\Test\Models\Company;
+use WF\Onboard\Test\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use stdClass;
 
@@ -139,7 +140,7 @@ class OnboardTest extends TestCase
         $this->assertEquals(0, User::onboarded()->count());
         /** @var OnboardingSteps $steps */
         $steps = $this->app->get(OnboardingSteps::class);
-        $steps->addStep('Required', User::class)
+        OnboardFacade::addStep('Required', User::class)
             ->requiredIf($this->boolCallable(true))
             ->completeScope(function (Builder $builder) {
                 $builder->orWhere('age', 1);

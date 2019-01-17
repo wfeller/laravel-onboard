@@ -1,6 +1,6 @@
 <?php
 
-namespace Calebporzio\Onboard;
+namespace WF\Onboard;
 
 use Illuminate\Support\Collection;
 
@@ -11,7 +11,7 @@ class OnboardingSteps
     /**
      * @param string $title The title of the step.
      * @param array|string|null $userClass The class or classes this step should be applied to (aka App\User, App\Team, etc.)
-     * @return \Calebporzio\Onboard\OnboardingStep
+     * @return \WF\Onboard\OnboardingStep
      */
     public function addStep(string $title, $userClass = null) : OnboardingStep
     {
@@ -34,8 +34,8 @@ class OnboardingSteps
     }
 
     /**
-     * @param  object $user The current user object
-     * @return \Illuminate\Support\Collection|\Calebporzio\Onboard\OnboardingStep[]
+     * @param  object $user The current user
+     * @return \Illuminate\Support\Collection|\WF\Onboard\OnboardingStep[]
      */
     public function steps(object $user) : Collection
     {
