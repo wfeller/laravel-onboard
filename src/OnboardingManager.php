@@ -14,6 +14,11 @@ class OnboardingManager
         $this->steps = $onboardingSteps->steps($user);
     }
 
+    public function step(string $code) : ?OnboardingStep
+    {
+        return $this->steps->get($code);
+    }
+
     /**
      * @return \Illuminate\Support\Collection|\WF\Onboard\OnboardingStep[]
      */
