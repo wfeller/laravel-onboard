@@ -101,7 +101,7 @@ Definining custom attributes and accessing them:
 ```php
 // Defining the attributes
 Onboard::addStep('Step w/ custom attributes', User::class)
-    ->attributes([
+    ->setAttributes([
         'name' => 'Waldo',
         'shirt_color' => 'Red & White',
     ]);

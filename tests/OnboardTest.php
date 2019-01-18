@@ -21,7 +21,7 @@ class OnboardTest extends TestCase
         $onboardingSteps->addStep('Test Step', stdClass::class)
             ->link('/some/url')
             ->cta('Test This!')
-            ->attributes(['another' => 'attribute'])
+            ->setAttributes(['another' => 'attribute'])
             ->completeIf($this->boolCallable(true));
 
         $this->assertEquals(1, $onboardingSteps->steps(new stdClass)->count());
@@ -48,8 +48,8 @@ class OnboardTest extends TestCase
     public function steps_can_exist_only_once_per_code()
     {
         $steps = new OnboardingSteps;
-        $steps->addStep('Step', User::class)->attributes(['letter' => 'a']);
-        $steps->addStep('Step', User::class)->attributes(['letter' => 'b']);
+        $steps->addStep('Step', User::class)->setAttributes(['letter' => 'a']);
+        $steps->addStep('Step', User::class)->setAttributes(['letter' => 'b']);
         $this->assertEquals(1, $steps->steps(new User)->count());
         $this->assertEquals('b', $steps->steps(new User)->get('Step')->letter);
     }
@@ -58,13 +58,13 @@ class OnboardTest extends TestCase
     public function steps_can_be_correctly_scoped_to_a_class()
     {
         $mapper = function (OnboardingStep $step) {
-            return ['code' => $step->code, 'letter' => $step->attribute('letter')];
+            return ['code' => $step->code, 'letter' => $step->getAttribute('letter')];
         };
 
         $steps = new OnboardingSteps;
-        $steps->addStep('step 1', User::class)->attributes(['letter' => 'a']);
-        $steps->addStep('step 2', User::class)->attributes(['letter' => 'b']);
-        $steps->addStep('step 3', Company::class)->attributes(['letter' => 'c']);
+        $steps->addStep('step 1', User::class)->setAttributes(['letter' => 'a']);
+        $steps->addStep('step 2', User::class)->setAttributes(['letter' => 'b']);
+        $steps->addStep('step 3', Company::class)->setAttributes(['letter' => 'c']);
         $this->assertEquals(1, $steps->steps(new Company)->count());
         $this->assertEquals(2, $steps->steps(new User)->count());
 
@@ -79,7 +79,7 @@ class OnboardTest extends TestCase
 
         $user2 = $steps->steps(new User);
 
-        $user2->get('step 2')->attributes(['letter' => 'x']);
+        $user2->get('step 2')->setAttributes(['letter' => 'x']);
         $this->assertEquals('b', $user1->get('step 2')->letter);
         $this->assertEquals('x', $user2->get('step 2')->letter);
     }

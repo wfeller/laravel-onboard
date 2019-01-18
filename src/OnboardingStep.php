@@ -24,22 +24,22 @@ class OnboardingStep
 
     public function __construct(string $code)
     {
-        $this->attributes(['code' => $code, 'title' => $code]);
+        $this->setAttributes(['code' => $code, 'title' => $code]);
     }
 
     public function title(string $title) : self
     {
-        return $this->attributes(['title' => $title]);
+        return $this->setAttributes(['title' => $title]);
     }
 
     public function cta(string $cta) : self
     {
-        return $this->attributes(['cta' => $cta]);
+        return $this->setAttributes(['cta' => $cta]);
     }
 
     public function link(string $link) : self
     {
-        return $this->attributes(['link' => $link]);
+        return $this->setAttributes(['link' => $link]);
     }
 
     public function completeIf(callable $callback) : self
@@ -138,12 +138,17 @@ class OnboardingStep
         });
     }
 
-    public function attribute($key, $default = null)
+    public function hasAttribute(string $key) : bool
+    {
+        return Arr::has($this->attributes, $key);
+    }
+
+    public function getAttribute($key, $default = null)
     {
         return Arr::get($this->attributes, $key, $default);
     }
 
-    public function attributes(array $attributes) : self
+    public function setAttributes(array $attributes) : self
     {
         $this->attributes = array_merge($this->attributes, $attributes);
 
@@ -152,6 +157,6 @@ class OnboardingStep
 
     public function __get($key)
     {
-        return $this->attribute($key);
+        return $this->getAttribute($key);
     }
 }
