@@ -4,6 +4,7 @@ namespace WF\Onboard;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Traits\Macroable;
 
 /**
  * Class OnboardingStep
@@ -15,6 +16,8 @@ use Illuminate\Support\Arr;
  */
 class OnboardingStep
 {
+    use Macroable;
+
     protected $attributes = [];
     protected $completeIf;
     protected $completeScope;
