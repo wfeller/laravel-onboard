@@ -31,7 +31,8 @@ class OnboardingSteps
                 }
             }
         }
-
-        return collect($this->stepsCache[$id])->map->setUser($user);
+        return collect($this->stepsCache[$id])->each(function (OnboardingStep $step) use ($user) {
+            $step->setUser($user);
+        });
     }
 }
