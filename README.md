@@ -100,15 +100,20 @@ $onboarding->steps()->each(function($step) {
 Definining custom attributes and accessing them:
 ```php
 // Defining the attributes
+// Closures will be resolved using the given onboarding user as their only argument 
 Onboard::addStep('Step w/ custom attributes', User::class)
     ->setAttributes([
         'name' => 'Waldo',
         'shirt_color' => 'Red & White',
+        'shirt_price' => function (User $user) {
+            return $user->age * 4; // yes, that example sucks :)
+        },
     ]);
 
 // Accessing them
 $step->name;
 $step->shirt_color;
+$step->shirt_price;
 ```
 
 ## Example middleware

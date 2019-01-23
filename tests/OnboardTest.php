@@ -21,17 +21,30 @@ class OnboardTest extends TestCase
         $onboardingSteps->addStep('Test Step', stdClass::class)
             ->link('/some/url')
             ->cta('Test This!')
+            ->title(function (stdClass $class) {
+                return $class->title;
+            })
             ->setAttributes(['another' => 'attribute'])
             ->completeIf($this->boolCallable(true));
 
-        $this->assertEquals(1, $onboardingSteps->steps(new stdClass)->count());
+        $onboardingSteps->addStep('Other Step', stdClass::class);
 
-        $step = $onboardingSteps->steps(new stdClass)->first();
+        $class = new stdClass;
+        $class->title = 'My Great Title';
+
+        $this->assertEquals(2, $onboardingSteps->steps($class)->count());
+
+        $step = $onboardingSteps->steps($class)->first();
+        $last = $onboardingSteps->steps($class)->last();
 
         $this->assertEquals('/some/url', $step->link);
         $this->assertEquals('Test This!', $step->cta);
-        $this->assertEquals('Test Step', $step->title);
+        $this->assertEquals('Test Step', $step->code);
+        $this->assertEquals('My Great Title', $step->title);
         $this->assertEquals('attribute', $step->another);
+
+        $this->assertEquals('Other Step', $last->code);
+        $this->assertEquals('Other Step', $last->title);
     }
 
     /** @test */

@@ -10,9 +10,9 @@ use Illuminate\Support\Traits\Macroable;
  * Class OnboardingStep
  * @package WF\Onboard
  * @property-read string $code
- * @property-read string|null $title
- * @property-read string|null $cta
- * @property-read string|null $link
+ * @property-read string|mixed|null $title
+ * @property-read string|mixed|null $cta
+ * @property-read string|mixed|null $link
  */
 class OnboardingStep
 {
@@ -30,17 +30,17 @@ class OnboardingStep
         $this->setAttributes(['code' => $code, 'title' => $code]);
     }
 
-    public function title(string $title) : self
+    public function title($title) : self
     {
         return $this->setAttributes(['title' => $title]);
     }
 
-    public function cta(string $cta) : self
+    public function cta($cta) : self
     {
         return $this->setAttributes(['cta' => $cta]);
     }
 
-    public function link(string $link) : self
+    public function link($link) : self
     {
         return $this->setAttributes(['link' => $link]);
     }
@@ -76,6 +76,12 @@ class OnboardingStep
     public function setUser(object $user) : self
     {
         $this->user = $user;
+
+        foreach ($this->attributes as &$attribute) {
+            if ($attribute instanceof \Closure) {
+                $attribute = call_user_func_array($attribute, [$this->user]);
+            }
+        }
 
         return $this;
     }
