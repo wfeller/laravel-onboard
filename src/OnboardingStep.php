@@ -2,6 +2,7 @@
 
 namespace WF\Onboard;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
@@ -14,7 +15,7 @@ use Illuminate\Support\Traits\Macroable;
  * @property-read string|mixed|null $cta
  * @property-read string|mixed|null $link
  */
-class OnboardingStep
+class OnboardingStep implements Arrayable
 {
     use Macroable;
 
@@ -167,5 +168,15 @@ class OnboardingStep
     public function __get($key)
     {
         return $this->getAttribute($key);
+    }
+
+    public function toArray() : array
+    {
+        return [
+            'code' => $this->code,
+            'required' => $this->required(),
+            'complete' => $this->complete(),
+            'attributes' => $this->attributes,
+        ];
     }
 }
