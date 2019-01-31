@@ -2,12 +2,12 @@
 
 namespace WF\Onboard;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class OnboardingSteps
 {
     protected $stepsCache = [];
-
     protected $steps = [];
 
     public function addStep(string $code, string $onboardedClass) : OnboardingStep
@@ -21,18 +21,33 @@ class OnboardingSteps
      */
     public function steps(object $user) : Collection
     {
-        $id = spl_object_id($user);
+        $id = $this->getCacheId($user);
 
         if (! isset($this->stepsCache[$id])) {
-            $this->stepsCache[$id] = [];
-            if (isset($this->steps[get_class($user)])) {
-                foreach ($this->steps[get_class($user)] as $code => $step) {
-                    $this->stepsCache[$id][$code] = clone $step;
-                }
-            }
+            $this->setStepsFor($user, $id);
         }
+
         return collect($this->stepsCache[$id])->each(function (OnboardingStep $step) use ($user) {
             $step->setUser($user);
         });
+    }
+
+    protected function getCacheId(object $user) : string
+    {
+        if ($user instanceof Model && $user->exists) {
+            return $user->getConnectionName().$user->getTable().$user->getKey();
+
+        }
+        return (string) spl_object_id($user);
+    }
+
+    protected function setStepsFor(object $user, $id) : void
+    {
+        $this->stepsCache[$id] = [];
+        if (isset($this->steps[get_class($user)])) {
+            foreach ($this->steps[get_class($user)] as $code => $step) {
+                $this->stepsCache[$id][$code] = clone $step;
+            }
+        }
     }
 }
