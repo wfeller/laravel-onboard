@@ -112,8 +112,21 @@ class OnboardTest extends TestCase
         $this->assertEquals('updated', $step_a->title);
         $this->assertSame($step_a, $step_a_a);
         $this->assertSame($step_a, $step_a_b);
+        $this->assertNotSame($step_a, $step_b);
         $this->assertEquals('updated', $step_a_a->title);
         $this->assertEquals('updated', $step_a_b->title);
+    }
+
+    /** @test */
+    public function always_returns_the_same_steps_for_the_same_user()
+    {
+        User::query()->create(['name' => 'joe', 'age' => 30]);
+        OnboardFacade::addStep('code', User::class);
+        $user_a = User::query()->first();
+        $step_a = $user_a->onboarding()->step('code');
+        $user_b = User::query()->first();
+        $step_b = $user_b->onboarding()->step('code');
+        $this->assertSame($step_a, $step_b);
     }
 
     /** @test */
