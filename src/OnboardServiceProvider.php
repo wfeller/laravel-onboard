@@ -14,13 +14,13 @@ class OnboardServiceProvider extends ServiceProvider
         Grammar::macro('reverseWheres', function (Builder $builder) : string {
             /** @var Grammar $this */
             $wheres = $this->compileWheresToArray($builder->getQuery());
-            array_walk($wheres, function (&$value) {
-                if (Str::startsWith($value, ['and', 'And', 'AND'])) {
-                    $value = 'or NOT' . substr($value, 3);
-                } elseif (Str::startsWith($value, ['or', 'Or', 'OR'])) {
-                    $value = 'and NOT' . substr($value, 2);
+            foreach ($wheres as &$where) {
+                if (Str::startsWith($where, ['and', 'And', 'AND'])) {
+                    $where = 'or NOT' . substr($where, 3);
+                } elseif (Str::startsWith($where, ['or', 'Or', 'OR'])) {
+                    $where = 'and NOT' . substr($where, 2);
                 }
-            });
+            }
             /** @var Grammar $this */
             return Str::replaceFirst('where ', '', $this->concatenateWhereClauses(null, $wheres));
         });
