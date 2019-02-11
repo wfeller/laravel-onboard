@@ -25,7 +25,7 @@ Configure your steps in your `App\Providers\AppServiceProvider.php`
     public function boot()
     {
         // This step will only apply to User::class:
-        Onboard::addStep('Create your first post', User::class)
+        OnboardFacade::addStep('Create your first post', User::class)
             ->link('/post/create')
             ->cta('Create Post')
             ->completeIf(function (User $user) {
@@ -101,7 +101,7 @@ Definining custom attributes and accessing them:
 ```php
 // Defining the attributes
 // Closures will be resolved using the given onboarding user as their only argument 
-Onboard::addStep('Step w/ custom attributes', User::class)
+OnboardFacade::addStep('Step w/ custom attributes', User::class)
     ->setAttributes([
         'name' => 'Waldo',
         'shirt_color' => 'Red & White',

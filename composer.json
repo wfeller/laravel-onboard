@@ -34,10 +34,7 @@
     "laravel": {
       "providers": [
         "WF\\Onboard\\OnboardServiceProvider"
-      ],
-      "aliases": {
-        "Onboard": "WF\\Onboard\\OnboardFacade"
-      }
+      ]
     }
   }
 }
