@@ -15,6 +15,11 @@ class OnboardingSteps
         return $this->steps[$onboardedClass][$code] = new OnboardingStep($code);
     }
 
+    public function getRawSteps(string $onboardedClass) : array
+    {
+        return $this->steps[$onboardedClass];
+    }
+
     /**
      * @param  object $user The current user
      * @return \Illuminate\Support\Collection|\WF\Onboard\OnboardingStep[]
@@ -27,9 +32,7 @@ class OnboardingSteps
             $this->setStepsFor($user, $id);
         }
 
-        return collect($this->stepsCache[$id])->each(function (OnboardingStep $step) use ($user) {
-            $step->setUser($user);
-        });
+        return collect($this->stepsCache[$id]);
     }
 
     protected function getCacheId(object $user) : string
@@ -38,15 +41,17 @@ class OnboardingSteps
             return $user->getConnectionName().$user->getTable().$user->getKey();
 
         }
+
         return (string) spl_object_id($user);
     }
 
     protected function setStepsFor(object $user, $id) : void
     {
         $this->stepsCache[$id] = [];
+
         if (isset($this->steps[get_class($user)])) {
             foreach ($this->steps[get_class($user)] as $code => $step) {
-                $this->stepsCache[$id][$code] = clone $step;
+                $this->stepsCache[$id][$code] = (clone $step)->setUser($user);
             }
         }
     }
