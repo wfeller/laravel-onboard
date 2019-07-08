@@ -120,6 +120,7 @@ class OnboardingStep implements Arrayable
         if (! $this->completeScope) {
             throw new \LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
         }
+
         if ($this->requiredScope) {
             $builder->where(function (Builder $builder) {
                 $builder
