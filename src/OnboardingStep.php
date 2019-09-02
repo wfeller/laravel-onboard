@@ -24,6 +24,7 @@ class OnboardingStep implements Arrayable
     protected $completeScope;
     protected $requiredIf;
     protected $requiredScope;
+    protected $neverRequired = false;
     protected $user;
 
     public function __construct(string $code)
@@ -74,6 +75,13 @@ class OnboardingStep implements Arrayable
         return $this;
     }
 
+    public function neverRequired() : self
+    {
+        $this->neverRequired = true;
+
+        return $this;
+    }
+
     public function setUser(object $user) : self
     {
         $this->user = $user;
@@ -103,6 +111,10 @@ class OnboardingStep implements Arrayable
 
     public function required() : bool
     {
+        if ($this->neverRequired) {
+            return false;
+        }
+
         if ($this->requiredIf && $this->user) {
             return !! call_user_func_array($this->requiredIf, [$this->user]);
         }
@@ -117,6 +129,10 @@ class OnboardingStep implements Arrayable
 
     public function applyScopes(Builder $builder) : void
     {
+        if ($this->neverRequired) {
+            return;
+        }
+
         if (! $this->completeScope) {
             throw new \LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
         }
