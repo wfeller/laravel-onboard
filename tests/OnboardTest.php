@@ -345,6 +345,36 @@ class OnboardTest extends TestCase
         $this->assertTrue($robert->is(User::onboarded()->first()));
     }
 
+    /** @test */
+    public function a_step_can_be_never_required()
+    {
+        $this->assertEquals(0, User::onboarded()->count());
+
+        /** @var OnboardingSteps $steps */
+        OnboardFacade::addStep('Never Required', User::class)
+            ->neverRequired()
+            ->completeScope(function (Builder $builder) {
+                /** @var User $builder */
+                $builder->hasAnyName('robert');
+            })
+            ->completeIf(function (User $user) {
+                return $user->name === 'robert';
+            });
+
+        User::query()->insert([
+            ['name' => 'John', 'age' => 10], // not complete
+            ['name' => 'Jack', 'age' => 100], // not complete
+        ]);
+
+        $this->assertEquals(2, User::onboarded()->count());
+
+        /** @var User $jack */
+        $jack = User::query()->where('name', 'Jack')->first();
+
+        $this->assertFalse($jack->onboarding()->finished());
+        $this->assertTrue($jack->onboarding()->finishedRequired());
+    }
+
     private function boolCallable(bool $return = true)
     {
         return function () use ($return) {
