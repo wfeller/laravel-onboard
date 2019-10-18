@@ -2,14 +2,14 @@
 
 namespace WF\Onboard;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
+use LogicException;
 
 /**
- * Class OnboardingStep
- * @package WF\Onboard
  * @property-read string $code
  * @property-read string|mixed|null $title
  * @property-read string|mixed|null $cta
@@ -47,28 +47,28 @@ class OnboardingStep implements Arrayable
         return $this->setAttributes(['link' => $link]);
     }
 
-    public function completeIf(callable $callback) : self
+    public function completeIf(Closure $callback) : self
     {
         $this->completeIf = $callback;
 
         return $this;
     }
 
-    public function completeScope(callable $callback) : self
+    public function completeScope(Closure $callback) : self
     {
         $this->completeScope = $callback;
 
         return $this;
     }
 
-    public function requiredIf(callable $callback) : self
+    public function requiredIf(Closure $callback) : self
     {
         $this->requiredIf = $callback;
 
         return $this;
     }
 
-    public function requiredScope(callable $callback) : self
+    public function requiredScope(Closure $callback) : self
     {
         $this->requiredScope = $callback;
 
@@ -87,8 +87,8 @@ class OnboardingStep implements Arrayable
         $this->user = $user;
 
         foreach ($this->attributes as &$attribute) {
-            if ($attribute instanceof \Closure) {
-                $attribute = call_user_func_array($attribute, [$this->user]);
+            if ($attribute instanceof Closure) {
+                $attribute = $attribute($user);
             }
         }
 
@@ -98,7 +98,7 @@ class OnboardingStep implements Arrayable
     public function complete() : bool
     {
         if ($this->completeIf && $this->user) {
-            return !! call_user_func_array($this->completeIf, [$this->user]);
+            return !! ($this->completeIf)($this->user);
         }
 
         return false;
@@ -116,7 +116,7 @@ class OnboardingStep implements Arrayable
         }
 
         if ($this->requiredIf && $this->user) {
-            return !! call_user_func_array($this->requiredIf, [$this->user]);
+            return !! ($this->requiredIf)($this->user);
         }
 
         return true;
@@ -134,7 +134,7 @@ class OnboardingStep implements Arrayable
         }
 
         if (! $this->completeScope) {
-            throw new \LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
+            throw new LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
         }
 
         if ($this->requiredScope) {
@@ -158,10 +158,10 @@ class OnboardingStep implements Arrayable
         }
     }
 
-    private function applyScope(callable $scope, Builder $builder) : void
+    private function applyScope(Closure $scope, Builder $builder) : void
     {
         $builder->where(function (Builder $query) use ($scope) {
-            call_user_func_array($scope, [$query]);
+            $scope($query);
         });
     }
 
