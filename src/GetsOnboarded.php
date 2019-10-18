@@ -19,12 +19,16 @@ trait GetsOnboarded
 
     public function scopeOnboarded(Builder $builder, bool $boarded = true) : Builder
     {
-        $clone = clone $builder;
-        $this->onboarding()->steps()->each->applyScopes($builder);
+        $clone = $boarded ? null : clone $builder;
+        $this->onboarding()->steps()->each(function (OnboardingStep $step) use ($builder) {
+            $step->applyScopes($builder);
+        });
+
         if (! $boarded) {
             $clone->whereRaw($builder->getQuery()->getGrammar()->reverseWheres($builder), $builder->getBindings());
             return $clone;
         }
+
         return $builder;
     }
 }
