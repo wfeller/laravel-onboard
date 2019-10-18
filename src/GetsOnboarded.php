@@ -25,8 +25,10 @@ trait GetsOnboarded
         });
 
         if (! $boarded) {
-            $clone->whereRaw($builder->getQuery()->getGrammar()->reverseWheres($builder), $builder->getBindings());
-            return $clone;
+            return $clone->whereRaw(
+                $builder->getQuery()->getGrammar()->reverseWheres($builder),
+                $builder->getQuery()->getBindings()
+            );
         }
 
         return $builder;

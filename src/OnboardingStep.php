@@ -142,10 +142,11 @@ class OnboardingStep implements Arrayable
                 $builder
                     ->orWhere(function (Builder $builder) {
                         $dummyBuilder = clone $builder;
-                        call_user_func_array($this->requiredScope, [$dummyBuilder]);
+                        ($this->requiredScope)($dummyBuilder);
+
                         $builder->whereRaw(
                             $dummyBuilder->getQuery()->getGrammar()->reverseWheres($dummyBuilder),
-                            $dummyBuilder->getBindings()
+                            $dummyBuilder->getQuery()->getBindings()
                         );
                     })
                     ->orWhere(function (Builder $builder) {
