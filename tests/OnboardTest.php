@@ -236,6 +236,7 @@ class OnboardTest extends TestCase
     public function can_query_onboarded_users()
     {
         $this->assertEquals(0, User::onboarded()->count());
+
         /** @var OnboardingSteps $steps */
         $steps = $this->app->get(OnboardingSteps::class);
         OnboardFacade::addStep('Required', User::class)
@@ -290,7 +291,7 @@ class OnboardTest extends TestCase
     public function can_use_scope_in_onboarded_scope()
     {
         $this->assertEquals(0, User::onboarded()->count());
-        /** @var OnboardingSteps $steps */
+
         OnboardFacade::addStep('Required', User::class)
             ->completeScope(function (Builder $builder) {
                 /** @var User $builder */
@@ -302,8 +303,7 @@ class OnboardTest extends TestCase
             ->requiredScope(function (Builder $builder) {
                 /** @var User $builder */
                 $builder->hasAnyName('robert', 'john');
-            })
-        ;
+            });
 
         User::query()->insert([
             ['name' => 'john', 'age' => 10], // not complete
@@ -320,7 +320,7 @@ class OnboardTest extends TestCase
     public function can_use_scope_in_onboarded_scope_2()
     {
         $this->assertEquals(0, User::onboarded()->count());
-        /** @var OnboardingSteps $steps */
+
         OnboardFacade::addStep('Required', User::class)
             ->completeScope(function (Builder $builder) {
                 /** @var User $builder */
@@ -350,7 +350,6 @@ class OnboardTest extends TestCase
     {
         $this->assertEquals(0, User::onboarded()->count());
 
-        /** @var OnboardingSteps $steps */
         OnboardFacade::addStep('Never Required', User::class)
             ->neverRequired()
             ->completeScope(function (Builder $builder) {
@@ -373,6 +372,54 @@ class OnboardTest extends TestCase
 
         $this->assertFalse($jack->onboarding()->finished());
         $this->assertTrue($jack->onboarding()->finishedRequired());
+    }
+
+    /** @test */
+    public function required_and_complete_results_can_be_cached()
+    {
+        OnboardFacade::addStep('WithCache', User::class)
+            ->cacheResults()
+            ->completeIf(function (User $user) {
+                return $user->name === 'robert';
+            });
+
+        OnboardFacade::addStep('WithoutCache', User::class)
+            ->completeIf(function (User $user) {
+                return $user->name === 'robert';
+            });
+
+        $robert = new User(['name' => 'robert', 'age' => 50]);
+        $robert->save();
+
+        $this->assertTrue($robert->onboarding()->finished());
+
+        $this->assertTrue($robert->onboarding()->step('WithCache')->complete());
+        $this->assertTrue($robert->onboarding()->step('WithoutCache')->complete());
+
+        $robert->name = 'bob';
+
+        $this->assertTrue($robert->onboarding()->step('WithCache')->complete());
+        $this->assertFalse($robert->onboarding()->step('WithoutCache')->complete());
+
+        $robert->save();
+
+        /** @var User $robertCopy */
+        $robertCopy = User::query()->find($robert->getKey());
+
+        $this->assertTrue($robertCopy->onboarding()->step('WithCache')->complete());
+        $this->assertFalse($robertCopy->onboarding()->step('WithoutCache')->complete());
+
+        $robert->onboarding()->resetCache();
+
+        $this->assertFalse($robert->onboarding()->step('WithCache')->complete());
+        $this->assertFalse($robert->onboarding()->step('WithoutCache')->complete());
+
+        $jane = new User(['name' => 'jane']);
+
+        $this->assertTrue($jane->onboarding()->inProgress());
+
+        $this->assertTrue($jane->onboarding()->step('WithCache')->incomplete());
+        $this->assertTrue($jane->onboarding()->step('WithoutCache')->incomplete());
     }
 
     private function boolCallable(bool $return = true)

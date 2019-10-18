@@ -14,6 +14,15 @@ class OnboardingManager
         $this->steps = $onboardingSteps->steps($user);
     }
 
+    public function resetCache() : self
+    {
+        foreach ($this->steps as $step) {
+            $step->clearCache();
+        }
+
+        return $this;
+    }
+
     public function step(string $code) : ?OnboardingStep
     {
         return $this->steps->get($code);

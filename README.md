@@ -28,8 +28,11 @@ Configure your steps in your `App\Providers\AppServiceProvider.php`
         OnboardFacade::addStep('Create your first post', User::class)
             ->link('/post/create')
             ->cta('Create Post')
+            // ->cacheResults() // You can cache the results to avoid duplicating queries
             ->completeIf(function (User $user) {
-                return $user->posts->count() > 0;
+                // This will make 1 DB query each time to retrieve the count
+                // The result will be cached if using cacheResults()
+                return $user->posts()->count() > 0;
             })
             // You may add a scope to only fetch users having completed this step
             // This scope will be used when querying User::onboarded()->get()

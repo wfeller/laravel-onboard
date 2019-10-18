@@ -19,6 +19,9 @@ class OnboardingStep implements Arrayable
 {
     use Macroable;
 
+    protected $cachesResults = false;
+    protected $results = [];
+
     protected $attributes = [];
     protected $completeIf;
     protected $completeScope;
@@ -45,6 +48,20 @@ class OnboardingStep implements Arrayable
     public function link($link) : self
     {
         return $this->setAttributes(['link' => $link]);
+    }
+
+    public function cacheResults(bool $cacheResults = true) : self
+    {
+        $this->cachesResults = $cacheResults;
+
+        return $this;
+    }
+
+    public function clearCache() : self
+    {
+        $this->results = [];
+
+        return $this;
     }
 
     public function completeIf(Closure $callback) : self
@@ -98,6 +115,11 @@ class OnboardingStep implements Arrayable
     public function complete() : bool
     {
         if ($this->completeIf && $this->user) {
+            if ($this->cachesResults) {
+                return $this->results['complete']
+                    ?? $this->results['complete'] = !! ($this->completeIf)($this->user);
+            }
+
             return !! ($this->completeIf)($this->user);
         }
 
@@ -116,6 +138,11 @@ class OnboardingStep implements Arrayable
         }
 
         if ($this->requiredIf && $this->user) {
+            if ($this->cachesResults) {
+                return $this->results['required']
+                    ?? $this->results['required'] = !! ($this->requiredIf)($this->user);
+            }
+
             return !! ($this->requiredIf)($this->user);
         }
 
