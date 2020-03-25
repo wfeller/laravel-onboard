@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 class OnboardingManager
 {
-    protected $steps;
+    protected Collection $steps;
 
     public function __construct(Model $user, OnboardingSteps $onboardingSteps)
     {
@@ -43,22 +43,18 @@ class OnboardingManager
 
     public function finished() : bool
     {
-        return $this->steps->filter(function (OnboardingStep $step) {
-            return $step->incomplete();
-        })->isEmpty();
+        return $this->steps->filter(static fn (OnboardingStep $step) : bool => $step->incomplete())->isEmpty();
     }
 
     public function finishedRequired() : bool
     {
-        return $this->steps->filter(function (OnboardingStep $step) {
-            return $step->required() && $step->incomplete();
-        })->isEmpty();
+        return $this->steps
+            ->filter(static fn (OnboardingStep $step) : bool => $step->required() && $step->incomplete())
+            ->isEmpty();
     }
 
     public function nextUnfinishedStep() : ?OnboardingStep
     {
-        return $this->steps->first(function (OnboardingStep $step) {
-            return $step->incomplete();
-        });
+        return $this->steps->first(static fn (OnboardingStep $step) : bool => $step->incomplete());
     }
 }

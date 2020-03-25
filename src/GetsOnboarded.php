@@ -3,28 +3,25 @@
 namespace WF\Onboard;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\App;
 
 /**
- * Trait GetsOnboarded
- * @package WF\Onboard
  * @method static \Illuminate\Database\Eloquent\Builder|static onboarded(bool $boarded = true)
  */
 trait GetsOnboarded
 {
     public function onboarding() : OnboardingManager
     {
-        return App::make(OnboardingManager::class, ['user' => $this]);
+        return app(OnboardingManager::class, ['user' => $this]);
     }
 
-    public function scopeOnboarded(Builder $builder, bool $boarded = true) : Builder
+    public function scopeOnboarded(Builder $builder, bool $onboarded = true) : Builder
     {
-        $clone = $boarded ? null : clone $builder;
-        $this->onboarding()->steps()->each(function (OnboardingStep $step) use ($builder) {
+        $clone = $onboarded ? null : clone $builder;
+        $this->onboarding()->steps()->each(static function (OnboardingStep $step) use ($builder) : void {
             $step->applyScopes($builder);
         });
 
-        if (! $boarded) {
+        if (! $onboarded) {
             return $clone->whereRaw(
                 $builder->getQuery()->getGrammar()->reverseWheres($builder),
                 $builder->getQuery()->getBindings()

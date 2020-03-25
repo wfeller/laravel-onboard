@@ -7,8 +7,8 @@ use Illuminate\Support\Collection;
 
 class OnboardingSteps
 {
-    protected $stepsCache = [];
-    protected $steps = [];
+    protected array $stepsCache = [];
+    protected array $steps = [];
 
     public function addStep(string $code, string $onboardedClass) : OnboardingStep
     {

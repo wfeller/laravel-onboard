@@ -422,10 +422,8 @@ class OnboardTest extends TestCase
         $this->assertTrue($jane->onboarding()->step('WithoutCache')->incomplete());
     }
 
-    private function boolCallable(bool $return = true)
+    private function boolCallable(bool $return = true) : \Closure
     {
-        return function () use ($return) {
-            return $return;
-        };
+        return static fn () : bool => $return;
     }
 }

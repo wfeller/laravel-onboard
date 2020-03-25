@@ -19,16 +19,16 @@ class OnboardingStep implements Arrayable
 {
     use Macroable;
 
-    protected $cachesResults = false;
-    protected $results = [];
+    protected bool $cachesResults = false;
+    protected array $results = [];
 
-    protected $attributes = [];
-    protected $completeIf;
-    protected $completeScope;
-    protected $requiredIf;
-    protected $requiredScope;
-    protected $neverRequired = false;
-    protected $user;
+    protected array $attributes = [];
+    protected Closure $completeIf;
+    protected Closure $completeScope;
+    protected Closure $requiredIf;
+    protected Closure $requiredScope;
+    protected bool $neverRequired = false;
+    protected object $user;
 
     public function __construct(string $code)
     {
@@ -114,7 +114,7 @@ class OnboardingStep implements Arrayable
 
     public function complete() : bool
     {
-        if ($this->completeIf && $this->user) {
+        if (isset($this->completeIf) && $this->user) {
             if ($this->cachesResults) {
                 return $this->results['complete']
                     ?? $this->results['complete'] = !! ($this->completeIf)($this->user);
@@ -137,7 +137,7 @@ class OnboardingStep implements Arrayable
             return false;
         }
 
-        if ($this->requiredIf && $this->user) {
+        if (isset($this->requiredIf) && $this->user) {
             if ($this->cachesResults) {
                 return $this->results['required']
                     ?? $this->results['required'] = !! ($this->requiredIf)($this->user);
@@ -160,11 +160,11 @@ class OnboardingStep implements Arrayable
             return;
         }
 
-        if (! $this->completeScope) {
+        if (! isset($this->completeScope)) {
             throw new LogicException("Missing scope for step '{$this->title}' and class '".get_class($this->user)."'");
         }
 
-        if ($this->requiredScope) {
+        if (isset($this->requiredScope)) {
             $builder->where(function (Builder $builder) {
                 $builder
                     ->orWhere(function (Builder $builder) {
@@ -188,9 +188,7 @@ class OnboardingStep implements Arrayable
 
     private function applyScope(Closure $scope, Builder $builder) : void
     {
-        $builder->where(function (Builder $query) use ($scope) {
-            $scope($query);
-        });
+        $builder->where(static fn (Builder $query) => $scope($query));
     }
 
     public function hasAttribute(string $key) : bool
