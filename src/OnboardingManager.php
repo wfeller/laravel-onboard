@@ -2,14 +2,13 @@
 
 namespace WF\Onboard;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class OnboardingManager
 {
     protected Collection $steps;
 
-    public function __construct(Model $user, OnboardingSteps $onboardingSteps)
+    public function __construct(object $user, OnboardingSteps $onboardingSteps)
     {
         $this->steps = $onboardingSteps->steps($user);
     }
