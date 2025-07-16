@@ -13,8 +13,7 @@ use stdClass;
 
 class OnboardTest extends TestCase
 {
-    /** @test */
-    public function steps_can_be_defined_and_configured()
+    public function test_steps_can_be_defined_and_configured()
     {
         $onboardingSteps = new OnboardingSteps;
 
@@ -47,8 +46,7 @@ class OnboardTest extends TestCase
         $this->assertEquals('Other Step', $last->title);
     }
 
-    /** @test */
-    public function steps_can_be_scoped_to_a_class()
+    public function test_steps_can_be_scoped_to_a_class()
     {
         $steps = new OnboardingSteps;
         $steps->addStep('Step', User::class);
@@ -57,8 +55,7 @@ class OnboardTest extends TestCase
         $this->assertEquals(1, $steps->steps(new User)->count());
     }
 
-    /** @test */
-    public function steps_can_exist_only_once_per_code()
+    public function test_steps_can_exist_only_once_per_code()
     {
         $steps = new OnboardingSteps;
         $steps->addStep('Step', User::class)->setAttributes(['letter' => 'a']);
@@ -67,8 +64,7 @@ class OnboardTest extends TestCase
         $this->assertEquals('b', $steps->steps(new User)->get('Step')->letter);
     }
 
-    /** @test */
-    public function steps_can_be_correctly_scoped_to_a_class()
+    public function test_steps_can_be_correctly_scoped_to_a_class()
     {
         $mapper = function (OnboardingStep $step) {
             return ['code' => $step->code, 'letter' => $step->getAttribute('letter')];
@@ -97,8 +93,7 @@ class OnboardTest extends TestCase
         $this->assertEquals('x', $user2->get('step 2')->letter);
     }
 
-    /** @test */
-    public function can_differently_update_multiple_onboarding_steps()
+    public function test_can_differently_update_multiple_onboarding_steps()
     {
         OnboardFacade::addStep('code', User::class);
         $user_a = new User;
@@ -117,8 +112,7 @@ class OnboardTest extends TestCase
         $this->assertEquals('updated', $step_a_b->title);
     }
 
-    /** @test */
-    public function always_returns_the_same_steps_for_the_same_user()
+    public function test_always_returns_the_same_steps_for_the_same_user()
     {
         User::query()->create(['name' => 'joe', 'age' => 30]);
         OnboardFacade::addStep('code', User::class);
@@ -129,8 +123,7 @@ class OnboardTest extends TestCase
         $this->assertSame($step_a, $step_b);
     }
 
-    /** @test */
-    public function is_in_progress_when_all_steps_are_incomplete()
+    public function test_is_in_progress_when_all_steps_are_incomplete()
     {
         $onboardingSteps = new OnboardingSteps;
         $onboardingSteps->addStep('Test Step', User::class);
@@ -143,8 +136,7 @@ class OnboardTest extends TestCase
         $this->assertFalse($onboarding->finishedRequired());
     }
 
-    /** @test */
-    public function is_finished_when_all_steps_are_complete()
+    public function test_is_finished_when_all_steps_are_complete()
     {
         $onboardingSteps = new OnboardingSteps;
         $onboardingSteps->addStep('Test Step', User::class)->completeIf($this->boolCallable(true));
@@ -155,8 +147,7 @@ class OnboardTest extends TestCase
         $this->assertFalse($onboarding->inProgress());
     }
 
-    /** @test */
-    public function finished_required_when_all_required_steps_are_complete()
+    public function test_finished_required_when_all_required_steps_are_complete()
     {
         $onboardingSteps = new OnboardingSteps;
         $onboardingSteps->addStep('First Step', User::class)->completeIf($this->boolCallable(true))->requiredIf($this->boolCallable(true));
@@ -169,8 +160,7 @@ class OnboardTest extends TestCase
         $this->assertTrue($onboarding->inProgress());
     }
 
-    /** @test */
-    public function it_returns_the_correct_next_unfinished_step()
+    public function test_it_returns_the_correct_next_unfinished_step()
     {
         $onboardingSteps = new OnboardingSteps;
         $onboardingSteps->addStep('Step 1', User::class)->link("/step-1")->completeIf($this->boolCallable(true));
@@ -186,8 +176,7 @@ class OnboardTest extends TestCase
         $this->assertEquals("/step-2", $nextStep->link);
     }
 
-    /** @test */
-    public function nextUnfinishedStep_returns_null_if_all_steps_are_completed()
+    public function test_nextUnfinishedStep_returns_null_if_all_steps_are_completed()
     {
         $onboardingSteps = new OnboardingSteps;
         $onboardingSteps->addStep('Step 1', User::class)->completeIf($this->boolCallable(true));
@@ -201,8 +190,7 @@ class OnboardTest extends TestCase
         $this->assertNull($nextStep);
     }
 
-    /** @test */
-    public function can_search_a_step_by_code()
+    public function test_can_search_a_step_by_code()
     {
         $step1 = OnboardFacade::addStep('code 1', User::class);
         $step2 = OnboardFacade::addStep('code 2', User::class);
@@ -215,8 +203,7 @@ class OnboardTest extends TestCase
         $this->assertSame($step3->code, $user->onboarding()->step('code 3')->code);
     }
 
-    /** @test */
-    public function the_proper_object_gets_passed_into_completion_callback()
+    public function test_the_proper_object_gets_passed_into_completion_callback()
     {
         $user = new User;
         $user->name = 'joe';
@@ -232,8 +219,7 @@ class OnboardTest extends TestCase
         $this->assertTrue($onboarding->finished());
     }
 
-    /** @test */
-    public function can_query_onboarded_users()
+    public function test_can_query_onboarded_users()
     {
         $this->assertEquals(0, User::onboarded()->count());
 
@@ -287,8 +273,7 @@ class OnboardTest extends TestCase
         $this->assertEquals(7, User::query()->count());
     }
 
-    /** @test */
-    public function can_use_scope_in_onboarded_scope()
+    public function test_can_use_scope_in_onboarded_scope()
     {
         $this->assertEquals(0, User::onboarded()->count());
 
@@ -316,8 +301,7 @@ class OnboardTest extends TestCase
         $this->assertTrue($robert->is(User::onboarded()->first()));
     }
 
-    /** @test */
-    public function can_use_scope_in_onboarded_scope_2()
+    public function test_can_use_scope_in_onboarded_scope_2()
     {
         $this->assertEquals(0, User::onboarded()->count());
 
@@ -345,8 +329,7 @@ class OnboardTest extends TestCase
         $this->assertTrue($robert->is(User::onboarded()->first()));
     }
 
-    /** @test */
-    public function a_step_can_be_never_required()
+    public function test_a_step_can_be_never_required()
     {
         $this->assertEquals(0, User::onboarded()->count());
 
@@ -374,8 +357,7 @@ class OnboardTest extends TestCase
         $this->assertTrue($jack->onboarding()->finishedRequired());
     }
 
-    /** @test */
-    public function required_and_complete_results_can_be_cached()
+    public function test_required_and_complete_results_can_be_cached()
     {
         OnboardFacade::addStep('WithCache', User::class)
             ->cacheResults()
